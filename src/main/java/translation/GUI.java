@@ -68,7 +68,8 @@ public class GUI {
             frame.pack();
             frame.setVisible(true);
 
-
+            frame.setLocationRelativeTo(null);
+            frame.setSize(350, 200);
         });
     }
 }
