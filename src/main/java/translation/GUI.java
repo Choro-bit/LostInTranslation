@@ -60,9 +60,10 @@ public class GUI {
             list.addListSelectionListener(new ListSelectionListener() {
                 @Override
                 public void valueChanged(ListSelectionEvent e) {
-                    String languageCode = languageConverter.fromLanguage(languageComboBox.getSelectedItem().toString());
+                    String language = languageComboBox.getSelectedItem().toString();
+                    String languageCode = languageConverter.fromLanguage(language);
                     String country = (String) list.getSelectedValue();
-                    String countryCode = "";
+                    String countryCode = ""; //convert here
                     String result = translator.translate(countryCode, languageCode);
                     resultLabel.setText(result);
                 }
