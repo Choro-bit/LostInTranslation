@@ -16,18 +16,13 @@ import java.util.Arrays;
 //            See the examples package for some code snippets that may be useful when updating
 //            the GUI.
 public class GUI {
-
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             Translator translator = new JSONTranslator();
             LanguageCodeConverter languageConverter = new LanguageCodeConverter();
+            CountryCodeConverter countryConverter = new CountryCodeConverter();
 
             JPanel countryPanel = new JPanel();
-            JTextField countryField = new JTextField(10);
-            countryField.setText("can");
-            countryField.setEditable(false); // we only support the "can" country code for now
-            countryPanel.add(new JLabel("Country:"));
-            countryPanel.add(countryField);
 
             JPanel languagePanel = new JPanel();
             JComboBox<String> languageComboBox = new JComboBox<>();
@@ -38,8 +33,6 @@ public class GUI {
             languagePanel.add(languageComboBox);
 
             JPanel buttonPanel = new JPanel();
-            JButton submit = new JButton("Submit");
-            buttonPanel.add(submit);
 
             JLabel resultLabelText = new JLabel("Translation:");
             buttonPanel.add(resultLabelText);
@@ -47,15 +40,17 @@ public class GUI {
             buttonPanel.add(resultLabel);
 
 
-            String[] items = new String[translator.getCountryCodes().size()];
+            String[] items = new String[countryConverter.getNumCountries()];
 
             int i = 0;
             for(String countryCode : translator.getCountryCodes()) {
-                items[i++] = countryCode; //use CountryCodeConverter here (convert to country)
+                items[i++] = countryConverter.fromCountryCode(countryCode);
             }
 
             JList list = new JList<>(items);
             list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+            JScrollPane scrollPane = new JScrollPane(list);
+            countryPanel.add(scrollPane);
 
             list.addListSelectionListener(new ListSelectionListener() {
                 @Override
@@ -63,39 +58,37 @@ public class GUI {
                     String language = languageComboBox.getSelectedItem().toString();
                     String languageCode = languageConverter.fromLanguage(language);
                     String country = (String) list.getSelectedValue();
-                    String countryCode = ""; //convert here
+                    String countryCode = countryConverter.fromCountry(country);
                     String result = translator.translate(countryCode, languageCode);
-                    resultLabel.setText(result);
-                }
-            });
-
-
-            // adding listener for when the user clicks the submit button
-            submit.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    String language = languageConverter.fromLanguage(languageComboBox.getSelectedItem().toString());
-                    String country = countryField.getText();
-
-                    // for now, just using our simple translator, but
-                    // we'll need to use the real JSON version later.
-                    Translator translator = new JSONTranslator();
-
-                    String result = translator.translate(country, language);
                     if (result == null) {
                         result = "no translation found!";
                     }
                     resultLabel.setText(result);
-
                 }
+            });
 
+            languageComboBox.addItemListener(new ItemListener() {
+                @Override
+                public void itemStateChanged(ItemEvent e) {
+                    if (e.getStateChange() == ItemEvent.SELECTED) {
+                        String language = languageComboBox.getSelectedItem().toString();
+                        String languageCode = languageConverter.fromLanguage(language);
+                        String country = (String) list.getSelectedValue();
+                        String countryCode = countryConverter.fromCountry(country);
+                        String result = translator.translate(countryCode, languageCode);
+                        if (result == null) {
+                            result = "no translation found!";
+                        }
+                        resultLabel.setText(result);
+                    }
+                }
             });
 
             JPanel mainPanel = new JPanel();
             mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
-            mainPanel.add(countryPanel);
             mainPanel.add(languagePanel);
             mainPanel.add(buttonPanel);
+            mainPanel.add(countryPanel);
 
             JFrame frame = new JFrame("Country Name Translator");
             frame.setContentPane(mainPanel);
@@ -104,7 +97,7 @@ public class GUI {
             frame.setVisible(true);
 
             frame.setLocationRelativeTo(null);
-            frame.setSize(350, 200);
+            frame.setSize(450, 300);
         });
     }
 }
